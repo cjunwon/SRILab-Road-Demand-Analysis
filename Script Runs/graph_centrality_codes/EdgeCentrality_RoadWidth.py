@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 11 15:12:13 2022
+
+@author: debasishjana
+"""
+
+import pickle
+import numpy as np
+import matplotlib.pyplot as plt
+import requests
+import json
+import networkx as nx
+import scipy.io as sio
+import matplotlib.colors as mcolors
+import pandas as pd
+
+def draw(G, pos, measures, measure_name):
+    
+    nodes = nx.draw_networkx_nodes(G, pos, node_size=25, cmap=plt.cm.plasma, 
+                                   node_color=list(measures.values()),
+                                   nodelist=measures.keys())
+    nodes.set_norm(mcolors.SymLogNorm(linthresh=0.01, linscale=1, base=10))
+    # labels = nx.draw_networkx_labels(G, pos)
+    edges = nx.draw_networkx_edges(G, pos)
+
+    plt.title(measure_name)
+    plt.colorbar(nodes)
+    plt.axis('off')
+    plt.show()
+    
+    
+
+def edge_draw(G, pos, measures, measure_name):
+    nodes = nx.draw_networkx_nodes(G, pos, node_size=0)
+    edges = nx.draw_networkx_edges(G, pos, width=0.1, edge_cmap=plt.cm.plasma,
+                                   edge_color=list(measures.values()),
+                                   edgelist=measures.keys())  
+    # edges.set_norm(mcolors.SymLogNorm(linthresh=0, linscale=1, base=10))
+    
+    plt.title(measure_name)
+    plt.colorbar(edges)
+    plt.axis('off')
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.savefig('EdgeCentrality_degree_WidthWt_Plot.eps', format='eps')
+    plt.show()
+
+
+with open(r'nodes_edges_weighted.pickle', 'rb') as handle:
+    B_matrix_weighted,node_coordinates_weighted = pickle.load(handle)
+    
+# with open(r'distance.pickle', 'rb') as handle:
+#     distance_array = pickle.load(handle)  
+    
+#distance_array (1st col - distance (m), 2nd col - time (s), 3rd col - time in traffic (s))
+
+
+
+Hillside_edgelist = B_matrix_weighted[:,0:2]
+NetworkEdgeWt_pre = B_matrix_weighted[:,4]
+
+# np.argwhere(np.isnan(NetworkEdgeWt_pre))
+
+NetworkEdgeWt_pre[np.isnan(NetworkEdgeWt_pre)] = 4 
+# NaN values are replaced with available smallest value of all the streets
+# 5 m or 15 ft is the minimum width of the road in california
+
+temp = np.reciprocal(NetworkEdgeWt_pre)
+# more width means less weight or less cost (hence reciprocal)
+
+temp = np.expand_dims(temp, axis = 1)
+
+FinalEdge = np.concatenate((Hillside_edgelist, temp), axis = 1)
+FinalEdge_df = pd.DataFrame(FinalEdge, columns = ['from', 'to', 'weight'])
+
+G = nx.from_pandas_edgelist(FinalEdge_df, source = 'from', target = 'to', edge_attr = True)
+
+
+
+EdgeCentrality_degree_WidthWt = nx.edge_betweenness_centrality(G, weight = 'weight')
+
+
+# G = nx.Graph()
+# G.add_edges_from(Hillside_edgelist, weight = temp)    
+    
+Hillside_NodeCoordinate = node_coordinates_weighted[:,0:2]
+
+d = dict(enumerate(Hillside_NodeCoordinate, 0))
+
+# # subax1 = plt.figure(num=1, figsize=(10,6))
+# # nx.draw(G, pos=d, node_color='r', edge_color='b', node_size=0.01, width=0.1)
+# # # plt.savefig('LAStreets.eps', format='eps')
+
+
+# EdgeCentrality_degree_WidthWt = nx.edge_betweenness_centrality(G, weight = 'weights')
+
+# subax5 = plt.figure(num=5, figsize=(10,6))
+# edge_draw(G, d, EdgeCentrality_degree_WidthWt, 'edge betweenness centrality with road width weight')
+
+    
+
+
+# create a binary pickle file 
+f = open("EdgeCentrality_degree_WidthWt_save.pkl","wb")
+
+# write the python object (dict) to pickle file
+pickle.dump(EdgeCentrality_degree_WidthWt,f)
+
+# close file
+f.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
