@@ -12,73 +12,146 @@ with open(r'graph_centrality_codes/distance.pickle', 'rb') as handle:
     
 #distance_array (1st col - distance (m), 2nd col - time (s), 3rd col - time in traffic (s))
 
+with open(r"script_output.pickle","rb") as handle:
+    origin_destination_path_list,no_connection_list,origin_destination_path_df,no_connection_df=pickle.load(handle)
 
-origin_destination_path_df = pd.read_pickle('origin_destination_path_df.pkl')
+# origin_destination_path_df columns:
+# ----------------------------------
+# 0: origin_id
+# 1: destination_id
+# 2: path
+# 3: S000_adjusted
+# 4: SA01_adjusted
+# 5: SA02_adjusted
+# 6: SA03_adjusted
+# 7: SE01_adjusted
+# 8: SE02_adjusted
+# 9: SE03_adjusted
+# 10: SI01_adjusted
+# 11: SI02_adjusted
+# 12: SI03_adjusted
+
+print('Number of rows in df: ' + str(len(origin_destination_path_list)))
+
+# Make a copy of the origin_destination_path_list and origin_destination_path_df
+origin_destination_path_list_copy = origin_destination_path_list.copy()
+origin_destination_path_df_copy = origin_destination_path_df.copy()
+
+# For quick testing with subsets you can uncomment the following 2 lines:
+# origin_destination_path_list_copy = origin_destination_path_list[0:100]
+# origin_destination_path_df_copy = origin_destination_path_df[0:100]
 
 
+# Rename columns
+origin_destination_path_df_copy.columns = ['origin_id', 'destination_id', 'path', 'S000_adjusted', 'SA01_adjusted', 'SA02_adjusted', 'SA03_adjusted', 'SE01_adjusted', 'SE02_adjusted', 'SE03_adjusted', 'SI01_adjusted', 'SI02_adjusted', 'SI03_adjusted']
 
-# Initialize array of 0s and add as a column to B_matrix_weighted
+# Find all unique paths in origin_destination_path_df_copy's path column
+pairlist_actual=[]
 
-zero_column = np.zeros((B_matrix_weighted.shape[0], 1))
-B_matrix_weighted_array = np.hstack((B_matrix_weighted, zero_column))
-B_matrix_weighted_array = B_matrix_weighted_array.astype(int)
+for j in range(len(origin_destination_path_list_copy)):
+    path = origin_destination_path_list_copy[j][2]
+    for i in range(len(path) - 1):
+        pair=(min([path[i],path[i+1]]),max([path[i],path[i+1]]))
+        if pair not in pairlist_actual:
+            pairlist_actual.append(pair)
+
+print('Number of pairs & updates we should get in the end: ' + str(len(pairlist_actual)))
+
+# --------------------------------------------------------------------
+
+# Initialize array of 0s with 10 columns and add to B_matrix_weighted
+zero_columns = np.zeros((B_matrix_weighted.shape[0], 10))
+B_matrix_weighted_array = np.hstack((B_matrix_weighted, zero_columns))
+B_matrix_weighted_array = B_matrix_weighted_array.astype(float)
 
 print(B_matrix_weighted_array.shape)
 
-B_matrix_weighted_df = pd.DataFrame(B_matrix_weighted_array)
+print(len(origin_destination_path_df))
 
+# --------------------------------------------------------------------
+# Approach 2 is significantly faster than Approach 1, and both produce the same results.
+# Uncomment the code for Approach 1 (vice versa) to test the other approach.
+# --------------------------------------------------------------------
 
-# Approach 1: Indexing the original B_matrix_weighted in array form (Issue: In theory this should be faster, and if you print individual values commented, it should be correct but it doesn't update the original array for some reason)
+# Approach 1: Indexing the original B_matrix_weighted in array form (Linear, very slow)
 
+# start=time.time()
+# pairlist_test_1=[]
 
-start=time.time()
+# for index, row in origin_destination_path_df_copy.iterrows():
+#     path = row['path']
+#     for i in range(len(path) - 1):
+        
+#         idx = np.where((B_matrix_weighted_array[:, 0] == path[i]) & (B_matrix_weighted_array[:, 1] == path[i+1]))[0]
 
-for index, row in origin_destination_path_df.iterrows():
+#         if len(idx) > 0:
+#             B_matrix_weighted_array[idx[0], 6] = B_matrix_weighted_array[idx[0], 6] + row['S000_adjusted']
+#             B_matrix_weighted_array[idx[0], 7] = B_matrix_weighted_array[idx[0], 7] + row['SA01_adjusted']
+#             B_matrix_weighted_array[idx[0], 8] = B_matrix_weighted_array[idx[0], 8] + row['SA02_adjusted']
+#             B_matrix_weighted_array[idx[0], 9] = B_matrix_weighted_array[idx[0], 9] + row['SA03_adjusted']
+#             B_matrix_weighted_array[idx[0], 10] = B_matrix_weighted_array[idx[0], 10] + row['SE01_adjusted']
+#             B_matrix_weighted_array[idx[0], 11] = B_matrix_weighted_array[idx[0], 11] + row['SE02_adjusted']
+#             B_matrix_weighted_array[idx[0], 12] = B_matrix_weighted_array[idx[0], 12] + row['SE03_adjusted']
+#             B_matrix_weighted_array[idx[0], 13] = B_matrix_weighted_array[idx[0], 13] + row['SI01_adjusted']
+#             B_matrix_weighted_array[idx[0], 14] = B_matrix_weighted_array[idx[0], 14] + row['SI02_adjusted']
+#             B_matrix_weighted_array[idx[0], 15] = B_matrix_weighted_array[idx[0], 15] + row['SI03_adjusted']
+#         elif len(idx) == 0:
+#             idx = np.where((B_matrix_weighted_array[:, 1] == path[i]) & (B_matrix_weighted_array[:, 0] == path[i+1]))[0]
+#             if len(idx) > 0:
+#                 B_matrix_weighted_array[idx[0], 6] = B_matrix_weighted_array[idx[0], 6] + row['S000_adjusted']
+#                 B_matrix_weighted_array[idx[0], 7] = B_matrix_weighted_array[idx[0], 7] + row['SA01_adjusted']
+#                 B_matrix_weighted_array[idx[0], 8] = B_matrix_weighted_array[idx[0], 8] + row['SA02_adjusted']
+#                 B_matrix_weighted_array[idx[0], 9] = B_matrix_weighted_array[idx[0], 9] + row['SA03_adjusted']
+#                 B_matrix_weighted_array[idx[0], 10] = B_matrix_weighted_array[idx[0], 10] + row['SE01_adjusted']
+#                 B_matrix_weighted_array[idx[0], 11] = B_matrix_weighted_array[idx[0], 11] + row['SE02_adjusted']
+#                 B_matrix_weighted_array[idx[0], 12] = B_matrix_weighted_array[idx[0], 12] + row['SE03_adjusted']
+#                 B_matrix_weighted_array[idx[0], 13] = B_matrix_weighted_array[idx[0], 13] + row['SI01_adjusted']
+#                 B_matrix_weighted_array[idx[0], 14] = B_matrix_weighted_array[idx[0], 14] + row['SI02_adjusted']
+#                 B_matrix_weighted_array[idx[0], 15] = B_matrix_weighted_array[idx[0], 15] + row['SI03_adjusted']
+#         if idx[0]not in pairlist_test_1:
+#             pairlist_test_1.append(idx[0])
+
+# end=time.time()
+
+# print(end-start)
+# print('Number of updates from Approach 1: ' + str(sum(B_matrix_weighted_array[:, 6] != 0)))
+
+# if sum(B_matrix_weighted_array[:, 6] != 0) == len(pairlist_actual):
+#     print('Approach 1 update count matches expected update count.')
+
+# --------------------------------------------------------------------
+
+# Approach 2: Converting B_matrix_weighted to a dictionary for faster lookups (O(1) lookups, faster)
+
+# Convert B_matrix_weighted_array to a dictionary for faster lookups
+B_matrix_weighted_dict = {(row[0], row[1]): row for row in B_matrix_weighted_array}
+
+start = time.time()
+
+for _, row in origin_destination_path_df_copy.iterrows():
     path = row['path']
     for i in range(len(path) - 1):
-        # Find the indices of the path elements in the B array
-        idx1 = np.where(B_matrix_weighted_array[:, 0] == path[i])[0]
-        idx2 = np.where(B_matrix_weighted_array[:, 1] == path[i+1])[0]
-        
-        if len(idx1) > 0 and len(idx2) > 0:
-            idx = np.intersect1d(idx1, idx2)
-            # print(idx)
-            if len(idx) > 0:
-                B_matrix_weighted_array[idx, 6] = B_matrix_weighted_array[idx, 6] + row['S000_adjusted']
-                # print(row['S000_adjusted'])
+        pair = (path[i], path[i+1])
+        reverse_pair = (path[i+1], path[i])
 
-end=time.time()
+        if pair in B_matrix_weighted_dict:
+            B_matrix_weighted_dict[pair][6:16] += row['S000_adjusted':'SI03_adjusted']
+        elif reverse_pair in B_matrix_weighted_dict:
+            B_matrix_weighted_dict[reverse_pair][6:16] += row['S000_adjusted':'SI03_adjusted']
 
-print(end-start)
-print('Number of node pairs updated in B_matrix_weighted (approach 1): ' + str(len(B_matrix_weighted_array[B_matrix_weighted_array[:, 6] != 0])))
+# Convert the dictionary back to a numpy array
+B_matrix_weighted_array = np.array(list(B_matrix_weighted_dict.values()))
 
+end = time.time()
 
-# Approach 2: Indexing the original B_matrix_weighted in dataframe form (This would be slower than the first approach but is working)
+print(end - start)
 
-# This iterates over each row of the origin_destination_path_df dataframe and for each row, it iterates over each pair of adjacent nodes in the path column.
-# For each pair of nodes, it checks if the nodes are present in the first and second columns (or reversed) of the B_matrix_weighted_df dataframe.
-# If the nodes are present, it adds the S000_adjusted value to the 6th column of the B_matrix_weighted_df dataframe.
+print('Number of updates from Approach 2: ' + str(sum(B_matrix_weighted_array[:, 6] != 0)))
 
-start=time.time()
+if sum(B_matrix_weighted_array[:, 6] != 0) == len(pairlist_actual):
+    print('Approach 2 update count matches expected update count.')
 
-for index, row in origin_destination_path_df.iterrows():
-    for i in range(len(row['path']) - 1):
-        if (row['path'][i] in B_matrix_weighted_df[0] and row['path'][i + 1] in B_matrix_weighted_df[1]):
-            B_matrix_weighted_df.loc[(B_matrix_weighted_df[0] == row['path'][i]) & (B_matrix_weighted_df[1] == row['path'][i + 1]), 6] += row['S000_adjusted']
-        elif (row['path'][i] in B_matrix_weighted_df[1] and row['path'][i + 1] in B_matrix_weighted_df[0]):
-            B_matrix_weighted_df.loc[(B_matrix_weighted_df[1] == row['path'][i]) & (B_matrix_weighted_df[0] == row['path'][i + 1]), 6] += row['S000_adjusted']
-
-end=time.time()
-
-print(end-start)
-print('Number of node pairs updated in B_matrix_weighted (approach 2): ' + str(len(B_matrix_weighted_df[B_matrix_weighted_df[6] != 0])))
-
-
-# Convert B_matrix_weighted_df back to a numpy array
-
-B_matrix_weighted_updated = B_matrix_weighted_df.to_numpy()
-
-# Export B_matrix_weighted_updated as a pickle file
+# Export B_matrix_weighted_aray as a pickle file
 
 with open('B_matrix_weighted_updated.pickle', 'wb') as handle:
-    pickle.dump(B_matrix_weighted_updated, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    pickle.dump(B_matrix_weighted_array, handle, protocol=pickle.HIGHEST_PROTOCOL)

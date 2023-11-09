@@ -50,24 +50,24 @@ print('Total Nodes: ' + str(len(Origin_Destination_Node_Added['w_node_id'])))
 print('Total Unique Nodes: ' + str(len(unique_nodes)))
 
 
-origin_destination_ids_df = Origin_Destination_Node_Added[['w_node_id', 'h_node_id', 'S000_adjusted']]
+origin_destination_ids_df = Origin_Destination_Node_Added[['w_node_id', 'h_node_id', 'S000_adjusted', 'SA01_adjusted', 'SA02_adjusted', 'SA03_adjusted', 'SE01_adjusted', 'SE02_adjusted', 'SE03_adjusted', 'SI01_adjusted', 'SI02_adjusted', 'SI03_adjusted']]
 
 origin_destination_ids_dict = defaultdict(list)
-for origin, destination, S000_adjusted in zip(origin_destination_ids_df['w_node_id'], origin_destination_ids_df['h_node_id'], origin_destination_ids_df['S000_adjusted']):
-    origin_destination_ids_dict[origin].append((destination, S000_adjusted))
+for origin, destination, S000_adjusted, SA01_adjusted, SA02_adjusted, SA03_adjusted, SE01_adjusted, SE02_adjusted, SE03_adjusted, SI01_adjusted, SI02_adjusted, SI03_adjusted in zip(origin_destination_ids_df['w_node_id'], origin_destination_ids_df['h_node_id'], origin_destination_ids_df['S000_adjusted'], origin_destination_ids_df['SA01_adjusted'], origin_destination_ids_df['SA02_adjusted'], origin_destination_ids_df['SA03_adjusted'], origin_destination_ids_df['SE01_adjusted'], origin_destination_ids_df['SE02_adjusted'], origin_destination_ids_df['SE03_adjusted'], origin_destination_ids_df['SI01_adjusted'], origin_destination_ids_df['SI02_adjusted'], origin_destination_ids_df['SI03_adjusted']):
+    origin_destination_ids_dict[origin].append((destination, S000_adjusted, SA01_adjusted, SA02_adjusted, SA03_adjusted, SE01_adjusted, SE02_adjusted, SE03_adjusted, SI01_adjusted, SI02_adjusted, SI03_adjusted))
 
 
 # Create empty dataframe to store origin ID, destination ID, and path
 
-origin_destination_path_df = pd.DataFrame(columns = ['origin_id', 'destination_id', 'path', 'S000_adjusted'])
+origin_destination_path_df = pd.DataFrame(columns = ['origin_id', 'destination_id', 'path', 'S000_adjusted', 'SA01_adjusted', 'SA02_adjusted', 'SA03_adjusted', 'SE01_adjusted', 'SE02_adjusted', 'SE03_adjusted', 'SI01_adjusted', 'SI02_adjusted', 'SI03_adjusted'])
 
 
-no_connection_df = pd.DataFrame(columns = ['origin_id', 'destination_id', 'S000_adjusted'])
+no_connection_df = pd.DataFrame(columns = ['origin_id', 'destination_id', 'S000_adjusted', 'SA01_adjusted', 'SA02_adjusted', 'SA03_adjusted', 'SE01_adjusted', 'SE02_adjusted', 'SE03_adjusted', 'SI01_adjusted', 'SI02_adjusted', 'SI03_adjusted'])
 
 
 start=time.time()
 
-# for node_id in unique_nodes[:50]:
+# for node_id in unique_nodes[:42]:
 for node_id in unique_nodes:
     try:
         path_dict = nx.single_source_dijkstra_path(G, node_id, cutoff=None, weight='weight')
@@ -76,9 +76,9 @@ for node_id in unique_nodes:
 
     for destination_with_adj in origin_destination_ids_dict[node_id]:
         if destination_with_adj[0] in path_dict:
-            origin_destination_path_df.loc[len(origin_destination_path_df.index)] = [node_id, destination_with_adj[0], path_dict[destination_with_adj[0]], destination_with_adj[1]]
+            origin_destination_path_df.loc[len(origin_destination_path_df.index)] = [node_id, destination_with_adj[0], path_dict[destination_with_adj[0]], destination_with_adj[1], destination_with_adj[2], destination_with_adj[3], destination_with_adj[4], destination_with_adj[5], destination_with_adj[6], destination_with_adj[7], destination_with_adj[8], destination_with_adj[9], destination_with_adj[10]]
         else:
-            no_connection_df.loc[len(no_connection_df.index)] = [node_id, destination, destination_with_adj[1]]
+            no_connection_df.loc[len(no_connection_df.index)] = [node_id, destination, destination_with_adj[1], destination_with_adj[2], destination_with_adj[3], destination_with_adj[4], destination_with_adj[5], destination_with_adj[6], destination_with_adj[7], destination_with_adj[8], destination_with_adj[9], destination_with_adj[10]]
 
 end=time.time()
 
