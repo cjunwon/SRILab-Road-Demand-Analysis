@@ -1,7 +1,10 @@
 # Large datasets
-.csv
-.shp
-.geojson
+*.csv
+*.shp
+*.geojson
+*.pkl
+*.pickle
+
 
 
 # Byte-compiled / optimized / DLL files

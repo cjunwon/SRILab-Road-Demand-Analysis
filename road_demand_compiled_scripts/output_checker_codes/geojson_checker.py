@@ -1,0 +1,38 @@
+import geopandas as gpd
+import numpy as np
+
+udf_before=gpd.read_file(r"../lodes_od_data/hillside_inventory_LA_centrality_full_new_evacmidnorth_lodes.geojson")
+udf=gpd.read_file(r"../lodes_od_data/hillside_inventory_LA_centrality_full_new_evacmidnorth_lodes_kriging.geojson")
+
+S000_new=np.array(udf["S000_adjusted"])
+SA01_new=np.array(udf["SA01_adjusted"])
+SA02_new=np.array(udf["SA02_adjusted"])
+SA03_new=np.array(udf["SA03_adjusted"])
+SE01_new=np.array(udf["SE01_adjusted"])
+SE02_new=np.array(udf["SE02_adjusted"])
+SE03_new=np.array(udf["SE03_adjusted"])
+SI01_new=np.array(udf["SI01_adjusted"])
+SI02_new=np.array(udf["SI02_adjusted"])
+SI03_new=np.array(udf["SI03_adjusted"])
+
+S000_orig=np.array(udf_before["S000_adjusted"])
+SA01_orig=np.array(udf_before["SA01_adjusted"])
+SA02_orig=np.array(udf_before["SA02_adjusted"])
+SA03_orig=np.array(udf_before["SA03_adjusted"])
+SE01_orig=np.array(udf_before["SE01_adjusted"])
+SE02_orig=np.array(udf_before["SE02_adjusted"])
+SE03_orig=np.array(udf_before["SE03_adjusted"])
+SI01_orig=np.array(udf_before["SI01_adjusted"])
+SI02_orig=np.array(udf_before["SI02_adjusted"])
+SI03_orig=np.array(udf_before["SI03_adjusted"])
+
+print(np.sum((S000_new!=S000_orig) & (S000_orig!=0)))
+print(np.sum((SA01_new!=SA01_orig) & (SA01_orig!=0)))
+print(np.sum((SA02_new!=SA02_orig) & (SA02_orig!=0)))
+print(np.sum((SA03_new!=SA03_orig) & (SA03_orig!=0)))
+print(np.sum((SE01_new!=SE01_orig) & (SE01_orig!=0)))
+print(np.sum((SE02_new!=SE02_orig) & (SE02_orig!=0)))
+print(np.sum((SE03_new!=SE03_orig) & (SE03_orig!=0)))
+print(np.sum((SI01_new!=SI01_orig) & (SI01_orig!=0)))
+print(np.sum((SI02_new!=SI02_orig) & (SI02_orig!=0)))
+print(np.sum((SI03_new!=SI03_orig) & (SI03_orig!=0)))

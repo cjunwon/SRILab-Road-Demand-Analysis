@@ -32,7 +32,7 @@ import pickle
 
 
 
-with open(r'B_matrix_weighted_updated_new.pickle', 'rb') as handle:
+with open(r'B_matrix_weighted_updated.pickle', 'rb') as handle:
     B_matrix_weighted_array= pickle.load(handle)    
     
 sumarray=B_matrix_weighted_array[:,6].copy()
