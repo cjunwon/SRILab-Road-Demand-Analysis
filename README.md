@@ -4,6 +4,10 @@ This is a subproject under a larger project in the Sensing and Robotics for Infr
 
 As part of an attempt to efficiently estimate traffic levels based on demographic levels, this subproject provides an alternative method of estimating road demand in the hillside street segments of the LA transportation system using a graph representation of the Los Angeles transportation network and the LEHD Origin-Destination Employment Statistics (LODES) dataset from the U.S. Census Bureau.
 
+This project mainly uses data from the following sources:
+- [StreetsLA GeoHub Street Inventory](https://geohub.lacity.org/datasets/lahub::streetsla-geohub-street-inventory/about) (StreetsLA, City of Los Angeles)
+- [Longitudinal Employer-Household Dynamics Origin-Destination Employment Statistics (LODES)](https://lehd.ces.census.gov/data/) (United States Census Bureau)
+
 ---
 
 The following slides provide a brief overview of the subproject.
